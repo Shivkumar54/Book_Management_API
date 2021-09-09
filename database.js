@@ -1,4 +1,4 @@
-const books = [{
+let books = [{
     ISBN: "12345Book",
     title: "50 days to learn Full Stack",
     pubDate: "2021-07-07",
@@ -9,7 +9,7 @@ const books = [{
     category:["tech", "programing", "education", "thriller"],
 },
 ];
-const author = [
+const authors = [
     {
         id: 1,
         name: "Kumar",
@@ -21,7 +21,7 @@ const author = [
         books:["12345Book"],
     }
 ];
-const publication = [
+const publications = [
     {
         id: 1,
         name: "writex",
@@ -34,4 +34,4 @@ const publication = [
     },
 ];
 
-module.exports = { books, author, publication };
+module.exports = { books, authors, publications };
