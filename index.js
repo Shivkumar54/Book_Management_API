@@ -1,4 +1,7 @@
+require("dotenv").config();
+
 const express = require("express");
+const mongoose = require("mongoose");
 
 const database = require("./database");
 // Initialization
@@ -6,6 +9,18 @@ const booky = express();
 
 // configuration
 booky.use(express.json());
+// establish database connection
+mongoose.connect(process.env.MONGO_URL
+    
+    // {
+    //     useNewUrlParser: true,
+    //     useUnifiedTopology: true,
+    //     useFindAndModify: false,
+    //     useCreateIndex: true,
+    // }
+).then(() => console.log("Established Database Connection"));
+
+
 
 /* 
 Route -       /
@@ -272,4 +287,3 @@ booky.delete("/publication/delete/book/:isbn/:pubId", (req, res) => {
 
 booky.listen(3000, () => console.log("hey server is running"));
 
-// HTTP client to handle other request
