@@ -3,12 +3,17 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 
-const database = require("./database/index");
+const database = require("./database");
 
 // models
-const BookModels = require("./book");
-const AuthorModels = require("./author")
+const BookModel = require("./book");
+const AuthorModel = require("./author")
 const PublicationModels = require("./publication")
+
+
+// initiationalizing micro services routes
+
+const Books = require("./API/Book");
 
 // Initialization
 const booky = express();
@@ -17,62 +22,11 @@ const booky = express();
 booky.use(express.json());
 // establish database connection
 mongoose.connect(process.env.MONGO_URL
-    
-    // {
-    //     useNewUrlParser: true,
-    //     useUnifiedTopology: true,
-    //     useFindAndModify: false,
-    //     useCreateIndex: true,
-    // }
 ).then(() => console.log("Established Database Connection"));
 
 
-
-/* 
-Route -       /
-Description - get All books 
-Access -      PUBLIC
-Parameter -   None
-Methods -     GET
-*/ 
-booky.get("/", (req, res) => {
-    return res.json({ books: database.books });
-});
-
-
-/* 
-Route -       /
-Description - get Specific books based on ISBN 
-Access -      PUBLIC
-Parameter -   ISBN
-Methods -     GET
-*/
-booky.get("/is/:isbn", (req, res) => {
-    const getSpecificBook = database.books.filter((book) => book.ISBN === req.params.isbn);
-
-    if (getSpecificBook.length === 0) {
-        return res.json({ error: `No book found for the isbn of ${req.params.isbn}`, });
-    }
-
-    return res.json({book: getSpecificBook});
-});
-
-/* 
-Route -       /c
-Description - get Specific books based on category 
-Access -      PUBLIC
-Parameter -   category
-Methods -     GET
-*/
-booky.get("/c/:category", (req, res) => {
-    const getSpecificBook = database.books.filter((book) => book.category.includes(req.params.category));
-    if (getSpecificBook.length === 0) {
-        return res.json({ error: `No book found for the category of ${req.params.category}`, });
-    }
-
-    return res.json({book: getSpecificBook});
-
-});
+// Microservices initialize
+booky.use("book", Books);
 
 /* 
 Route -       /author
@@ -113,19 +67,7 @@ booky.get("/publications", (req, res) => {
 });
 
 
-/* 
-Route -       /book/add
-Description - add new book
-Access -      PUBLIC
-Parameter -   NONE
-Methods -     POST
-*/
-booky.post("/book/add", (req, res) => {
-    console.log(req.body);
-    const { newBook } = req.body;
-    database.books.push(newBook);
-    return res.json({ books: database.books });
-});
+
 
 /* 
 Route -       /author/add
@@ -141,48 +83,7 @@ booky.post("/author/add", (req, res) => {
     return res.json({ authors: database.author });
 });
 
-/* 
-Route -      /book/update/title
-Description - update book title
-Access -      PUBLIC
-Parameter -   isbn
-Methods -     PUT
-*/
-booky.put("/book/update/title/:isbn", (req, res) => {
-    database.books.forEach((book) => {
-        if (book.ISBN === req.params.isbn) {
-            book.title = req.body.newBookTitle;
-            return;
-        }
-    });
-    return res.json({ books: database.books });
-});
 
-/* 
-Route -      /book/update/author
-Description - update/ add new author for a book
-Access -      PUBLIC
-Parameter -   isbn
-Methods -     PUT
-*/
-
-booky.put("/book/update/author/:isbn/:authorId", (req, res) => {
-
-    //update book database
-    database.books.forEach((book) => {
-        if (book.ISBN === req.params.isbn) {
-            return book.author.push(parseInt(req.params.authorId));
-        }
-    });
-
-    //update author database
-    database.author.forEach((author) => {
-        if (author.id === parseInt(req.params.authorId)) {
-            return author.books.push(req.params.isbn);
-        }
-    });
-    return res.json({books: database.books, author: database.author});
-});
 
 /* 
 Route -      /publication/update/book
@@ -212,53 +113,9 @@ booky.put("/publication/update/book/:isbn", (req, res) => {
     });
 });
 
-/* 
-Route -      /book/delete
-Description - delete a book
-Access -      PUBLIC
-Parameter -   isbn
-Methods -     DELETE
-*/
-booky.delete("/book/delete/:isbn", (req, res) => {
-    const updatedBookDatabase = database.books.filter(
-        (book) => book.ISBN !== req.params.isbn);
-    
-    database.books = updatedBookDatabase;
-    return res.json({ books: database.books });
-});
 
-/* 
-Route -      /book/delete/author
-Description - delete a author from a book
-Access -      PUBLIC
-Parameter -   isbn, authorId
-Methods -     DELETE
-*/
-booky.delete("/book/delete/author/:isbn/:authorId", (req, res) => {
 
-    // update book database
-    database.books.forEach((book) => {
-        if (book.ISBN === req.params.isbn) {
-            const newAuthorList = book.authors.filter(
-                (author) => author !== parseInt(req.params.authorId));
-            book.authors = newAuthorList;
-            return;
-        }
-    });
 
-    // update author database
-    database.authors.forEach((author) => {
-        if (author.id === parseInt(req.params.authorId)) {
-            const newBooksList = author.books.filter((book) => book != req.params.isbn);
-
-            author.books = newBooksList;
-            return;
-        }
-    });
-
-    res.json({ book: database.books, author: database.authors, message: "AUthor was deleted", });
-
-});
 
 
 /* 
