@@ -4,7 +4,7 @@ let books = [{
     pubDate: "2021-07-07",
     language: "en",
     numPage: 250,
-    author: [1, 2],
+    authors: [1, 2],
     publication:[1],
     category:["tech", "programing", "education", "thriller"],
 },
